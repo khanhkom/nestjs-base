@@ -1,0 +1,12 @@
+.idea/
+node_modules/
+build/
+tmp/
+temp/
+dist/
+coverage/
+
+.DS_STORE
+.env
+.env.*
+!.env.example

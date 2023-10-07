@@ -1,0 +1,11 @@
+version: '3'
+services:
+  postgresql:
+    image: postgres:14
+    restart: always
+    environment:
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=nest-test
+    ports:
+      - '5432:5432'
