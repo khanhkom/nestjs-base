@@ -1,12 +1,12 @@
 import { AppErrorCode } from '../models/app-error-code.model';
 import { AppException } from '../models/app-exception.model';
-import { LoggerProvider } from '../providers/logger.provider';
+import { LoggingProvider } from '../providers/logging.provider';
 
 class Execution<T> {
   private runnable: () => Promise<T>;
   private noOfRetries: number;
   private _silent: boolean;
-  private _logger?: LoggerProvider;
+  private _logger?: LoggingProvider;
   private message?: string;
 
   private constructor(runnable: () => Promise<T>) {
@@ -19,7 +19,7 @@ class Execution<T> {
     return new Execution<T>(runnable);
   }
 
-  logger(logger: LoggerProvider): Execution<T> {
+  logger(logger: LoggingProvider): Execution<T> {
     this._logger = logger;
     return this;
   }
@@ -53,20 +53,20 @@ class Execution<T> {
     }
 
     this._logger?.unhandledError('Failed to execute', this.message);
-    throw new AppException(AppErrorCode.ERR500001);
+    throw new AppException(AppErrorCode.ERR500000);
   }
 }
 
-export class TryExecution<T> {
+export class TryExecution {
   private constructor() {
     // do nothing
   }
 
-  public static init<T>(): TryExecution<T> {
+  public static init(): TryExecution {
     return new TryExecution();
   }
 
-  public try(runnable: () => Promise<T>): Execution<T> {
+  public try<T>(runnable: () => Promise<T>): Execution<T> {
     return Execution.of(runnable);
   }
 }

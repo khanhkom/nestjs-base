@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Role } from '../../shared/enums/role.enum';
-import { dateTransformer } from '../../shared/utils/db-type.transformer';
+import { Role } from '../../../shared/enums/role.enum';
+import { dateTransformer } from '../../../shared/utils/db-type.transformer';
 
 @Entity({ name: 'user' })
 export class UserEntity {

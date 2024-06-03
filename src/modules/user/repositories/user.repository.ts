@@ -1,7 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
 import { Injectable } from '@nestjs/common';
-import { PaginationResponse } from '../../shared/models/pagination.response';
+import { PaginationResponse } from '../../../shared/models/pagination.response';
 import { GetUserResponse } from '../models/get-user.response';
 import { GetUsersQuery } from '../models/get-users.query';
 import { plainToInstance } from 'class-transformer';

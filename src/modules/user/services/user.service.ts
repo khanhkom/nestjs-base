@@ -1,4 +1,4 @@
-import { PaginationResponse } from '../../shared/models/pagination.response';
+import { PaginationResponse } from '../../../shared/models/pagination.response';
 import { UserRepository } from '../repositories/user.repository';
 import { GetUsersQuery } from '../models/get-users.query';
 import { GetUserResponse } from '../models/get-user.response';

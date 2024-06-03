@@ -1,15 +1,21 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { AppContextProvider } from '../providers/app-context.provider';
-import { AppException } from '../models/app-exception.model';
+import { CanActivate, Injectable } from '@nestjs/common';
 import { AppErrorCode } from '../models/app-error-code.model';
+import { AppException } from '../models/app-exception.model';
+import { AppContextProvider } from '../providers/app-context.provider';
+import { LoggingProvider } from '../providers/logging.provider';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly appContextProvider: AppContextProvider) {}
+  constructor(
+    private readonly appContextProvider: AppContextProvider,
+    private readonly logger: LoggingProvider,
+  ) {
+    this.logger.setContext(AuthGuard.name);
+  }
 
-  canActivate(_context: ExecutionContext): boolean {
+  canActivate(): boolean {
     const appContext = this.appContextProvider.getStore();
-    if (appContext?.data?.user) {
+    if (appContext?.data.user) {
       return true;
     }
 

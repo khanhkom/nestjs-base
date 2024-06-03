@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../../user/repositories/user.repository';
-import { RegisterRequest } from '../models/register.request';
-import { AppException } from '../../shared/models/app-exception.model';
-import { AppErrorCode } from '../../shared/models/app-error-code.model';
-import { LoginRequest } from '../models/login.request';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { PASSWORD_SALT_ROUNDS } from '../../../shared/constants/app.constants';
+import { Role } from '../../../shared/enums/role.enum';
+import { AppErrorCode } from '../../../shared/models/app-error-code.model';
+import { AppException } from '../../../shared/models/app-exception.model';
+import { AuthenticatedUser } from '../../../shared/models/authenticated-user.model';
+import { JwtProvider } from '../../../shared/providers/jwt.provider';
+import { UserRepository } from '../../user/repositories/user.repository';
+import { LoginRequest } from '../models/login.request';
 import { LoginResponse } from '../models/login.response';
-import { AuthenticatedUser } from '../../shared/models/authenticated-user.model';
-import { Role } from '../../shared/enums/role.enum';
-import { JwtProvider } from '../../shared/providers/jwt.provider';
 import { RefreshTokenRequest } from '../models/refresh-token.request';
 import { RefreshTokenResponse } from '../models/refresh-token.response';
+import { RegisterRequest } from '../models/register.request';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +27,7 @@ export class AuthService {
       throw new AppException(AppErrorCode.ERR409001);
     }
 
-    const hashedPassword = await bcrypt.hash(request.password, 10);
+    const hashedPassword = await bcrypt.hash(request.password, PASSWORD_SALT_ROUNDS);
 
     const userEntity = this.userRepository.create({
       username: request.username,
@@ -68,6 +69,7 @@ export class AuthService {
     if (!user) {
       throw new AppException(AppErrorCode.ERR401000);
     }
+
     const userWithinRefreshToken = await this.jwtProvider.verifyRefreshAuth(request.refreshToken);
     if (!userWithinRefreshToken) {
       throw new AppException(AppErrorCode.ERR401000);

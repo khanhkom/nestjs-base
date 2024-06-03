@@ -6,6 +6,16 @@
     "spec": false
   },
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "dtoFileNameSuffix": [".dto.ts", ".entity.ts", ".query.ts", ".request.ts", ".response.ts", ".model.ts"],
+          "introspectComments": true
+        }
+      }
+    ],
+    "assets": [{ "include": "i18n/**/*", "watchAssets": true }]
   }
 }

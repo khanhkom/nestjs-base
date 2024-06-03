@@ -32,6 +32,16 @@
 $ npm install
 ```
 
+## Setup database
+
+```bash
+$ docker compose -f docker/docker-compose.yml up -d
+```
+
+## Setup ENV
+
+Copy the file .env.example into .env and configure environment variables
+
 ## Running the app
 
 ```bash

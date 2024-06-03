@@ -1,26 +1,16 @@
 import { ConsoleLogger as DefaultLogger, Injectable, Scope } from '@nestjs/common';
+import { SENSITIVE_REPLACEMENTS } from '../constants/app.constants';
 import { AppContextProvider } from './app-context.provider';
-import { SENSITIVE_FIELDS } from '../constants/app.constants';
 
 @Injectable({ scope: Scope.TRANSIENT })
-export class LoggerProvider {
+export class LoggingProvider {
+  private static SENSITIVE_REPLACEMENTS = SENSITIVE_REPLACEMENTS;
+  private static CONTEXT_LENGTH = 20;
+
   private loggerInstance: DefaultLogger;
 
   constructor(protected readonly contextProvider: AppContextProvider) {
-    this.loggerInstance = new DefaultLogger(LoggerProvider.name);
-  }
-
-  private static MASK_REGEX = new RegExp(
-    SENSITIVE_FIELDS.map((field) => `(?<${field}>"${field}":".*?")`).join('|'),
-    'gmi',
-  );
-
-  private static buildMaskReplacer(): (...args: unknown[]) => string {
-    return (...args: unknown[]): string => {
-      const namedGroups = args.pop() as object;
-      const [key] = Object.entries(namedGroups).find(([, value]) => value !== undefined) as [string, unknown];
-      return `"${key}":"[MASKED]"`;
-    };
+    this.loggerInstance = new DefaultLogger(LoggingProvider.name);
   }
 
   private static transformArgs(optionalArgs: unknown[]): string[] {
@@ -30,22 +20,18 @@ export class LoggerProvider {
       }
 
       if (typeof arg === 'string') {
-        const needToMask = LoggerProvider.MASK_REGEX.test(arg);
-        if (!needToMask) {
-          return arg;
-        }
-
-        return arg.replace(LoggerProvider.MASK_REGEX, LoggerProvider.buildMaskReplacer());
+        return LoggingProvider.SENSITIVE_REPLACEMENTS.reduce(
+          (replacedStr, replacement) => replacedStr.replace(replacement.REGEX, replacement.REPLACER),
+          arg,
+        );
       }
 
       if (typeof arg === 'object') {
         const str = JSON.stringify(arg);
-        const needToMask = LoggerProvider.MASK_REGEX.test(str);
-        if (!needToMask) {
-          return str;
-        }
-
-        return str.replace(LoggerProvider.MASK_REGEX, LoggerProvider.buildMaskReplacer());
+        return LoggingProvider.SENSITIVE_REPLACEMENTS.reduce(
+          (replacedStr, replacement) => replacedStr.replace(replacement.REGEX, replacement.REPLACER),
+          str,
+        );
       }
 
       return JSON.stringify(arg);
@@ -56,11 +42,20 @@ export class LoggerProvider {
     const appContext = this.contextProvider.getStore();
     const executionIdAppended = appContext?.executionId ? `[${appContext?.executionId}] ` : '';
 
-    return executionIdAppended + LoggerProvider.transformArgs(optionalArgs).join(' ');
+    return executionIdAppended + LoggingProvider.transformArgs(optionalArgs).join(' ');
   }
 
   public setContext(context: string): void {
-    this.loggerInstance.setContext(context);
+    if (context.length < LoggingProvider.CONTEXT_LENGTH) {
+      const transformedContext = context.padEnd(LoggingProvider.CONTEXT_LENGTH, '+');
+      this.loggerInstance.setContext(transformedContext);
+      return;
+    }
+    const transformedContext = context.replace(/^(?<start>.{10}).*(?<end>.{7})$/, (...args: unknown[]) => {
+      const groups = args.pop() as { start: string; end: string };
+      return `${groups.start}...${groups.end}`;
+    });
+    this.loggerInstance.setContext(transformedContext);
   }
 
   /**

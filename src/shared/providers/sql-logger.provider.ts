@@ -1,13 +1,13 @@
-import { Logger } from 'typeorm';
-import { LoggerProvider } from './logger.provider';
 import { Injectable } from '@nestjs/common';
+import { Logger } from 'typeorm';
 import { AppContextProvider } from './app-context.provider';
+import { LoggingProvider } from './logging.provider';
 
 @Injectable()
-export class SqlLoggerProvider extends LoggerProvider implements Logger {
+export class SqlLoggingProvider extends LoggingProvider implements Logger {
   constructor(protected readonly contextProvider: AppContextProvider) {
     super(contextProvider);
-    this.setContext(SqlLoggerProvider.name);
+    this.setContext(SqlLoggingProvider.name);
   }
 
   logQuery(query: string, parameters?: unknown[] | undefined): void {

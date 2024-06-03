@@ -1,15 +1,21 @@
 import { NestFactory } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
-import { AppModule } from './app.module';
-import { EnvironmentVariables } from './shared/models/environment.model';
 import helmet from 'helmet';
+import { AppModule } from './app.module';
+import { setupSwagger } from './setupSwagger';
+import { AppConfigProvider } from './shared/providers/app-config.provider';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  const appConfigProvider = app.get(AppConfigProvider);
+  const { apiPrefix, port } = appConfigProvider.config.server;
+
+  app.setGlobalPrefix(apiPrefix);
   app.use(helmet());
 
-  const configService = app.get<ConfigService<EnvironmentVariables, true>>(ConfigService);
-  await app.listen(configService.get('APP_PORT'));
+  // Setup swagger
+  setupSwagger(app);
+
+  await app.listen(port);
 }
 
 void bootstrap();

@@ -1,0 +1,9 @@
+{
+  "ERR400000": "Bad Request!",
+  "ERR401000": "Unauthorized!",
+  "ERR403000": "Forbidden!",
+  "ERR404000": "Not Found!",
+  "ERR500000": "Internal Server Error!",
+
+  "ERR409001": "The username is already used!"
+}

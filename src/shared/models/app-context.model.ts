@@ -6,10 +6,12 @@ export class AppContextData {
 
 export class AppContext {
   public readonly executionId: string;
+  public readonly startAt: number;
   public readonly data: AppContextData;
 
   constructor(executionId: string) {
     this.executionId = executionId;
+    this.startAt = Date.now();
     this.data = new AppContextData();
   }
 }

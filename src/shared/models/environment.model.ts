@@ -1,6 +1,6 @@
-import { IsEnum, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
-enum EnvironmentType {
+export enum EnvironmentType {
   Development = 'development',
   Staging = 'staging',
   Production = 'production',
@@ -12,6 +12,10 @@ export class EnvironmentVariables {
 
   @IsNumber()
   APP_PORT!: number;
+
+  @IsOptional()
+  @IsString()
+  API_PREFIX?: string;
 
   @IsString()
   DB_HOST!: string;

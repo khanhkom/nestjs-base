@@ -21,7 +21,7 @@
     "experimentalDecorators": true,
 
     "noImplicitAny": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": true
   },
   "include": ["src", "migrations", "typeOrm.config.ts"]
 }

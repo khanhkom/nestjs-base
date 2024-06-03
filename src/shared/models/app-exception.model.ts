@@ -1,9 +1,18 @@
-import { HttpException } from '@nestjs/common';
 import { AppErrorCode } from './app-error-code.model';
-import { AppErrorResponse } from './app-response.model';
 
-export class AppException extends HttpException {
-  constructor(errorCode: AppErrorCode) {
-    super(new AppErrorResponse(errorCode), errorCode.httpStatus);
+export class AppException extends Error {
+  constructor(
+    public readonly appErrorCode: AppErrorCode,
+    public readonly params?: Record<string, unknown>,
+  ) {
+    const message = [appErrorCode.code, params]
+      .filter((v) => !!v)
+      .map((v) => (typeof v === 'object' ? JSON.stringify(v) : v))
+      .join(' ');
+    super(message);
+  }
+
+  get name(): string {
+    return AppException.name;
   }
 }

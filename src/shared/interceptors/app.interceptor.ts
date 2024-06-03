@@ -1,39 +1,47 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Request } from 'express';
-import { Observable, catchError, finalize, map, throwError } from 'rxjs';
-import { AppSuccessResponse } from '../models/app-response.model';
-import { LoggerProvider } from '../providers/logger.provider';
+import { Observable, catchError, map, throwError } from 'rxjs';
+import { AppContextProvider } from '../providers/app-context.provider';
+import { LoggingProvider } from '../providers/logging.provider';
 
 @Injectable()
 export class AppInterceptor implements NestInterceptor {
-  constructor(private readonly logger: LoggerProvider) {
+  constructor(
+    private readonly contextProvider: AppContextProvider,
+    private readonly logger: LoggingProvider,
+  ) {
     this.logger.setContext(AppInterceptor.name);
   }
 
   intercept(context: ExecutionContext, next: CallHandler<unknown>): Observable<unknown> {
+    const appContext = this.contextProvider.getStore();
+    const startTime = Date.now();
+
     if (context.getType() == 'http') {
       const request = context.switchToHttp().getRequest<Request>();
-      this.logger.info('Start:', request.method, request.path);
-      this.logger.info('Request:', {
-        query: request.query,
-        params: request.params,
-        body: request.body,
-        headers: request.headers,
-      });
-
-      const startTime = Date.now();
+      this.logger.info('Begin:', request.method, request.path);
 
       return next.handle().pipe(
         map((data) => {
+          const endTime = Date.now();
+
           this.logger.info('Result:', data);
-          return new AppSuccessResponse(data);
+          this.logger.info('End:', request.method, request.path, 'Duration:', `${endTime - startTime} ms`);
+          this.logger.info(
+            'Report RequestId:',
+            appContext?.executionId,
+            'Total Duration:',
+            `${endTime - (appContext?.startAt ?? startTime)} ms`,
+          );
+
+          return data;
         }),
         catchError((error) => {
-          this.logger.normalError(error);
+          const endTime = Date.now();
+
+          this.logger.info('End:', request.method, request.path, 'Duration:', `${endTime - startTime} ms`);
+
           return throwError(() => error);
-        }),
-        finalize(() => {
-          this.logger.info('End:', request.method, request.path, `in ${Date.now() - startTime} ms`);
         }),
       );
     }
